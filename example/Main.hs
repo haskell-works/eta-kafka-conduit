@@ -26,4 +26,5 @@ main = do
   forM_ received (print . bytesToJString)
   print "Ok."
 
+-- helper function
 foreign import java unsafe "@new" bytesToJString :: JByteArray -> JString

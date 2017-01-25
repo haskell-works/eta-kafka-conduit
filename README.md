@@ -24,4 +24,11 @@ export DOCKER_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep
 #### Execute the example
 ```
 $ epm run
+
+"Running sink..."
+"Running source..."
+ConsumerRecord {crTopic = TopicName "conduit-example-topic", crPartition = PartitionId 0, crOffset = Offset 0, crChecksum = Checksum 50557688, crKey = Just "c-one", crValue = Just "c-one"}
+ConsumerRecord {crTopic = TopicName "conduit-example-topic", crPartition = PartitionId 0, crOffset = Offset 1, crChecksum = Checksum 1248482825, crKey = Just "c-two", crValue = Just "c-two"}
+ConsumerRecord {crTopic = TopicName "conduit-example-topic", crPartition = PartitionId 0, crOffset = Offset 2, crChecksum = Checksum 3484821948, crKey = Just "c-three", crValue = Just "c-three"}
+"Ok."
 ```

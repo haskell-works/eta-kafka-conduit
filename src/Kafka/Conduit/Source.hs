@@ -5,13 +5,13 @@ module Kafka.Conduit.Source
 
 import Java
 import Data.Conduit
-import Kafka.Consumer
 
 import Control.Monad.IO.Class
 import Control.Monad (void)
 import Control.Monad.Trans.Resource
 
 import Kafka.Types as X
+import Kafka.Consumer as X
 import Kafka.Consumer.Types as X
 import Kafka.Consumer.ConsumerProperties as X
 

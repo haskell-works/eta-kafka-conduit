@@ -6,7 +6,6 @@ module Kafka.Conduit.Source
 import Java
 import Data.Conduit
 import Kafka.Consumer
-import qualified Kafka.Consumer as KC
 
 import Control.Monad.IO.Class
 import Control.Monad (void)
@@ -35,3 +34,20 @@ kafkaSource props tm ts =
       batch <- poll cons tm
       yield batch
       runHandler cons
+
+kafkaSourceNoClose :: MonadIO m
+                   => KafkaConsumer
+                   -> Timeout
+                   -> Source m [ConsumerRecord (Maybe JByteArray) (Maybe JByteArray)]
+kafkaSourceNoClose kc tm = go
+  where
+    go = (poll kc tm >>= yield) >> go
+
+kafkaSourceAutoClose :: MonadResource m
+                     => KafkaConsumer
+                     -> Timeout
+                     -> Source m [ConsumerRecord (Maybe JByteArray) (Maybe JByteArray)]
+kafkaSourceAutoClose kc tm =
+  bracketP (return kc) closeConsumer go
+  where
+    go kc' = (poll kc' tm >>= yield) >> go kc'

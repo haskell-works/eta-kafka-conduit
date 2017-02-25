@@ -19,6 +19,8 @@ dependencies:
     - echo $PATH
     - wget -qO- https://get.haskellstack.org/ | sh
     - scripts/eta-install.sh
+    - git clone --depth 1 https://github.com/haskell-works/eta-kafka-client ~/eta-kafka-client
+    - epm sandbox add-source ~/eta-kafka-client
 
   override:
     - epm install --dependencies-only

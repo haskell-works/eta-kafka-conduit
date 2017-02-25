@@ -42,7 +42,7 @@ outputStream =
   .| kafkaSink producerConf
 
 inputStream =
-  kafkaSource consumerConf (Timeout 1000) [testTopic]
+  kafkaSource consumerConf (Millis 1000) [testTopic]
   .| L.concat
   .| L.map (bimap rawString rawString)
 

@@ -16,6 +16,11 @@ build-type:          Simple
 -- extra-source-files:
 cabal-version:       >=1.10
 
+source-repository head
+  type:     git
+  location: http://github.com/haskell-works/eta-kafka-conduit
+  tag: 0.5.0
+
 executable kafka-conduit-example
   main-is:             Main.hs
   -- other-modules:

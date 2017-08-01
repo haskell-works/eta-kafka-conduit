@@ -1,19 +1,19 @@
-{-# LANGUAGE MagicHash, BangPatterns, FlexibleContexts, DataKinds, TypeFamilies, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 --
 
-import Java
-import Java.String
-import GHC.Base
-import Control.Monad.Trans.Resource
-import Control.Monad(forM_)
-import Data.Conduit
-import Data.Bifunctor
-import Data.Maybe (maybeToList)
-import Data.Monoid ((<>))
-import Kafka.Conduit.Source
-import Kafka.Conduit.Sink
-import Data.Conduit.List as L
+import           Control.Monad                (forM_)
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans.Resource
+import           Data.Bifunctor
+import           Data.ByteString              as BS
+import           Data.Conduit
+import           Data.Conduit.List            as L
+import           Data.Maybe                   (maybeToList)
+import           Data.Monoid                  ((<>))
+import           GHC.Base
+import           Kafka.Conduit.Sink
+import           Kafka.Conduit.Source
 
 consumerConf :: ConsumerProperties
 consumerConf = consumerBrokersList [BrokerAddress "localhost:9092"]
@@ -24,39 +24,33 @@ consumerConf = consumerBrokersList [BrokerAddress "localhost:9092"]
 producerConf :: ProducerProperties
 producerConf = producerBrokersList [BrokerAddress "localhost:9092"]
 
+testTopic :: TopicName
 testTopic  = TopicName "conduit-example-topic"
 
 main :: IO ()
 main = do
-  print "Running sink..."
-  runConduitRes outputStream
-  print "Running source..."
-  msgs <- runConduitRes $ inputStream .| L.take 3
+  print "Producing messages..."
+  runConduitRes $ outputStream producerConf testTopic
+  print "Consuming messages..."
+  msgs <- runConduitRes $ inputStream consumerConf testTopic .| L.take 3
   forM_ msgs print
   print "Ok."
 
 
-outputStream =
+outputStream :: (MonadIO m, MonadResource m)
+             => ProducerProperties -> TopicName -> Sink a m ()
+outputStream props topic =
   L.sourceList ["c-one", "c-two", "c-three"]
-  .| L.map (mkProdRecord testTopic)
-  .| kafkaSink producerConf
+  .| L.map (mkProdRecord topic)
+  .| kafkaSink props
 
-inputStream =
-  kafkaSource consumerConf (Millis 1000) [testTopic]
+inputStream :: (MonadIO m, MonadResource m)
+            => ConsumerProperties
+            -> TopicName
+            -> Source m (ConsumerRecord (Maybe ByteString) (Maybe ByteString))
+inputStream props topic =
+  kafkaSource props (Millis 1000) [topic]
   .| L.concat
-  .| L.map (bimap rawString rawString)
 
-
-mkProdRecord t v =
-  let bytes = stringBytes v
-   in ProducerRecord t Nothing (Just bytes) (Just bytes)
-
-rawString :: Maybe JByteArray -> Maybe JString
-rawString m = bytesToJString <$> m
-
--- helpers, hopefully will go away with Eta development
-stringBytes :: String -> JByteArray
-stringBytes s = JByteArray (getBytesUtf8# js)
-  where !(JS# js) = toJString s
-
-foreign import java unsafe "@new" bytesToJString :: JByteArray -> JString
+mkProdRecord :: TopicName -> ByteString -> ProducerRecord
+mkProdRecord t v = ProducerRecord t Nothing (Just v) (Just v)

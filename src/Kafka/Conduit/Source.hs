@@ -3,26 +3,26 @@ module Kafka.Conduit.Source
 , kafkaSource
 ) where
 
-import Java
-import Data.Conduit
-import Data.Bifunctor
-import Data.Bitraversable
+import           Data.Bifunctor
+import           Data.Bitraversable
+import           Data.ByteString
+import           Data.Conduit
 
-import Control.Monad.IO.Class
-import Control.Monad (void)
-import Control.Monad.Trans.Resource
-import qualified Data.Conduit.List as L
+import           Control.Monad                     (void)
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans.Resource
+import qualified Data.Conduit.List                 as L
 
-import Kafka.Types as X
-import Kafka.Consumer as X
-import Kafka.Consumer.Types as X
-import Kafka.Consumer.ConsumerProperties as X
+import           Kafka.Consumer                    as X
+import           Kafka.Consumer.ConsumerProperties as X
+import           Kafka.Consumer.Types              as X
+import           Kafka.Types                       as X
 
 kafkaSource :: (MonadResource m)
             => ConsumerProperties
             -> Millis
             -> [TopicName]
-            -> Source m [ConsumerRecord (Maybe JByteArray) (Maybe JByteArray)]
+            -> Source m [ConsumerRecord (Maybe ByteString) (Maybe ByteString)]
 kafkaSource props tm ts =
   bracketP mkConsumer clConsumer runHandler
   where
@@ -41,7 +41,7 @@ kafkaSource props tm ts =
 kafkaSourceNoClose :: MonadIO m
                    => KafkaConsumer
                    -> Millis
-                   -> Source m [ConsumerRecord (Maybe JByteArray) (Maybe JByteArray)]
+                   -> Source m [ConsumerRecord (Maybe ByteString) (Maybe ByteString)]
 kafkaSourceNoClose kc tm = go
   where
     go = (poll kc tm >>= yield) >> go
@@ -49,7 +49,7 @@ kafkaSourceNoClose kc tm = go
 kafkaSourceAutoClose :: MonadResource m
                      => KafkaConsumer
                      -> Millis
-                     -> Source m [ConsumerRecord (Maybe JByteArray) (Maybe JByteArray)]
+                     -> Source m [ConsumerRecord (Maybe ByteString) (Maybe ByteString)]
 kafkaSourceAutoClose kc tm =
   bracketP (return kc) closeConsumer go
   where

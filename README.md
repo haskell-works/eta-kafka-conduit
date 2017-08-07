@@ -5,7 +5,7 @@
 An example can be found in the [example](example/Main.hs) project.
 
 ### Running the example
-Running the example requires Kafka to be available at `localhost`.  
+Running the example requires Kafka to be available at `localhost`.
 
 #### Run Kafka inside `docker-compose`
 If you already have Kafka accessible at `localhost:9092` skip this section.
@@ -23,8 +23,9 @@ export DOCKER_IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep
 
 #### Execute the example
 ```
-$ epm run
-
+$ etlas update
+$ etlas install --dependencies-only
+$ etlas run
 "Running sink..."
 "Running source..."
 ConsumerRecord {crTopic = TopicName "conduit-example-topic", crPartition = PartitionId 0, crOffset = Offset 0, crChecksum = Checksum 50557688, crKey = Just "c-one", crValue = Just "c-one"}
